@@ -28,71 +28,88 @@
               </el-col>
             </el-row>
             
-            <el-row :gutter="20">
-              <el-col :span="8">
-                <el-form-item label="项目ID" prop="pid">
-                  <el-input v-model="config.pid" placeholder="请输入项目ID" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="获取数量" prop="num">
-                  <el-input-number v-model="config.num" :min="1" :max="10" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="国家代码">
-                  <el-input v-model="config.cuy" placeholder="如：bo,us,cn" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-            
-            <el-row :gutter="20">
-              <el-col :span="8">
-                <el-form-item label="过滤黑名单">
-                  <el-select v-model="config.noblack">
-                    <el-option label="只过滤自己的黑名单" :value="0" />
-                    <el-option label="过滤所有用户黑名单" :value="1" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="获取方式">
-                  <el-select v-model="config.serial">
-                    <el-option label="单条" :value="2" />
-                    <el-option label="多条" :value="1" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="API版本">
-                  <el-select v-model="config.apiVersion">
-                    <el-option label="版本1 (直接返回手机号)" value="v1" />
-                    <el-option label="版本2 (返回手机号+区号)" value="v2" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
+                         <el-row :gutter="20">
+               <el-col :span="8">
+                 <el-form-item label="项目ID" prop="pid">
+                   <el-input v-model="config.pid" placeholder="请输入项目ID" />
+                 </el-form-item>
+               </el-col>
+               <el-col :span="8">
+                 <el-form-item label="获取数量" prop="num">
+                   <el-select v-model="config.num">
+                     <el-option label="获取1个" :value="1" />
+                     <el-option label="获取2个" :value="2" />
+                     <el-option label="获取3个" :value="3" />
+                     <el-option label="获取4个" :value="4" />
+                     <el-option label="获取5个" :value="5" />
+                     <el-option label="获取6个" :value="6" />
+                     <el-option label="获取7个" :value="7" />
+                     <el-option label="获取8个" :value="8" />
+                     <el-option label="获取9个" :value="9" />
+                     <el-option label="获取10个" :value="10" />
+                   </el-select>
+                 </el-form-item>
+               </el-col>
+               <el-col :span="8">
+                 <el-form-item label="国家代码">
+                   <el-input v-model="config.cuy" placeholder="如：bo,us,cn" />
+                 </el-form-item>
+               </el-col>
+             </el-row>
+             
+             <el-row :gutter="20">
+               <el-col :span="8">
+                 <el-form-item label="过滤黑名单">
+                   <el-select v-model="config.noblack">
+                     <el-option label="只过滤自己的黑名单" :value="0" />
+                     <el-option label="过滤所有用户黑名单" :value="1" />
+                   </el-select>
+                 </el-form-item>
+               </el-col>
+               <el-col :span="8">
+                 <el-form-item label="API版本">
+                   <el-select v-model="config.apiVersion">
+                     <el-option label="版本1 (直接返回手机号)" value="v1" />
+                     <el-option label="版本2 (返回手机号+区号)" value="v2" />
+                   </el-select>
+                 </el-form-item>
+               </el-col>
+             </el-row>
           </el-form>
           
-          <div class="button-group">
-            <el-button type="primary" @click="getUserInfo" :loading="loading.userInfo">
-              <el-icon><User /></el-icon>
-              获取用户信息
-            </el-button>
-            <el-button type="success" @click="getCountryPhoneNum" :loading="loading.countryNum">
-              <el-icon><Globe /></el-icon>
-              查询国家号码数量
-            </el-button>
-          </div>
+                     <div class="button-group">
+             <el-button type="primary" @click="getUserInfo" :loading="loading.userInfo">
+               <el-icon><User /></el-icon>
+               获取用户信息
+             </el-button>
+             <el-button type="success" @click="getCountryPhoneNum" :loading="loading.countryNum">
+               <el-icon><Globe /></el-icon>
+               查询国家号码数量
+             </el-button>
+             <el-button type="info" @click="saveConfig" :loading="loading.saveConfig">
+               <el-icon><Download /></el-icon>
+               保存配置
+             </el-button>
+             <el-button type="warning" @click="clearConfig">
+               <el-icon><Delete /></el-icon>
+               清除配置
+             </el-button>
+           </div>
         </el-card>
 
-        <!-- 操作区域 -->
-        <el-card class="operation-card">
-          <template #header>
-            <div class="card-header">
-              <span>🚀 批量操作</span>
-            </div>
-          </template>
+                 <!-- 操作区域 -->
+         <el-card class="operation-card">
+           <template #header>
+             <div class="card-header">
+               <span>🚀 批量操作</span>
+               <div class="auto-refresh-status" v-if="autoRefreshTimer">
+                 <el-tag type="success" size="small">
+                   <el-icon><Timer /></el-icon>
+                   自动刷新已开启 (每5秒)
+                 </el-tag>
+               </div>
+             </div>
+           </template>
           
           <div class="button-group">
             <el-button type="primary" @click="getMobileNumbers" :loading="loading.getMobile">
@@ -102,6 +119,13 @@
             <el-button type="warning" @click="getVerificationCodes" :loading="loading.getMsg">
               <el-icon><Message /></el-icon>
               获取验证码
+            </el-button>
+            <el-button 
+              :type="autoRefreshTimer ? 'danger' : 'success'" 
+              @click="autoRefreshTimer ? stopAutoRefresh() : startAutoRefresh()"
+            >
+              <el-icon><Refresh /></el-icon>
+              {{ autoRefreshTimer ? '停止自动刷新' : '开启自动刷新' }}
             </el-button>
             <el-button type="danger" @click="addToBlacklist" :loading="loading.addBlack">
               <el-icon><Delete /></el-icon>
@@ -185,41 +209,153 @@ export default {
   name: 'App',
   data() {
     return {
-      config: {
-        name: '',
-        apiKey: '',
-        pid: '',
-        num: 5,
-        cuy: '',
-        noblack: 0,
-        serial: 2,
-        apiVersion: 'v1'
-      },
+             config: {
+         name: '',
+         apiKey: '',
+         pid: '',
+         num: 5,
+         cuy: '',
+         noblack: 0,
+         apiVersion: 'v1'
+       },
+      autoRefreshTimer: null, // 自动刷新定时器
       rules: {
         name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
         apiKey: [{ required: true, message: '请输入API密钥', trigger: 'blur' }],
         pid: [{ required: true, message: '请输入项目ID', trigger: 'blur' }]
       },
-      loading: {
-        userInfo: false,
-        countryNum: false,
-        getMobile: false,
-        getMsg: false,
-        addBlack: false,
-        passMobile: false
-      },
+             loading: {
+         userInfo: false,
+         countryNum: false,
+         getMobile: false,
+         getMsg: false,
+         addBlack: false,
+         passMobile: false,
+         saveConfig: false
+       },
       phoneNumbers: [],
       userInfo: null,
       countryStats: null,
       activeTab: 'phones'
     }
   },
-  methods: {
+  
+     // 本地存储相关方法
+   saveConfigToStorage() {
+     try {
+       localStorage.setItem('smsConfig', JSON.stringify({
+         name: this.config.name,
+         apiKey: this.config.apiKey,
+         pid: this.config.pid,
+         num: this.config.num,
+         cuy: this.config.cuy,
+         noblack: this.config.noblack,
+         apiVersion: this.config.apiVersion
+       }))
+     } catch (error) {
+       console.error('保存配置失败:', error)
+     }
+   },
+  
+  loadConfigFromStorage() {
+    try {
+      const savedConfig = localStorage.getItem('smsConfig')
+      if (savedConfig) {
+        const config = JSON.parse(savedConfig)
+        Object.assign(this.config, config)
+      }
+    } catch (error) {
+      console.error('加载配置失败:', error)
+    }
+  },
+  
+     // 自动刷新相关方法
+   startAutoRefresh() {
+     if (this.phoneNumbers.length === 0) {
+       ElMessage.warning('请先获取手机号码')
+       return
+     }
+     
+     if (this.autoRefreshTimer) {
+       this.clearAutoRefresh()
+     }
+     
+     this.autoRefreshTimer = setInterval(() => {
+       this.getVerificationCodes(true) // 传入true表示是自动刷新
+     }, 5000) // 每5秒刷新一次
+     
+     ElMessage.success('自动获取验证码已开启，每5秒刷新一次')
+   },
+  
+  stopAutoRefresh() {
+    this.clearAutoRefresh()
+    ElMessage.info('自动获取验证码已停止')
+  },
+  
+     clearAutoRefresh() {
+     if (this.autoRefreshTimer) {
+       clearInterval(this.autoRefreshTimer)
+       this.autoRefreshTimer = null
+     }
+   },
+   
+   // 手动保存配置
+   async saveConfig() {
+     this.loading.saveConfig = true
+     try {
+       this.saveConfigToStorage()
+       ElMessage.success('配置已保存到本地存储')
+     } catch (error) {
+       ElMessage.error('保存配置失败')
+     } finally {
+       this.loading.saveConfig = false
+     }
+   },
+   
+   // 清除配置
+   clearConfig() {
+     ElMessageBox.confirm('确定要清除所有配置吗？', '确认操作', {
+       confirmButtonText: '确定',
+       cancelButtonText: '取消',
+       type: 'warning'
+     }).then(() => {
+       try {
+         localStorage.removeItem('smsConfig')
+                   this.config = {
+            name: '',
+            apiKey: '',
+            pid: '',
+            num: 5,
+            cuy: '',
+            noblack: 0,
+            apiVersion: 'v1'
+          }
+         ElMessage.success('配置已清除')
+       } catch (error) {
+         ElMessage.error('清除配置失败')
+       }
+     }).catch(() => {
+       // 用户取消
+     })
+   },
+  mounted() {
+    // 页面加载时从本地存储恢复配置
+    this.loadConfigFromStorage()
+  },
+  beforeUnmount() {
+    // 组件销毁前清除定时器
+    this.clearAutoRefresh()
+     },
+   methods: {
+
     async getUserInfo() {
       if (!this.config.name || !this.config.apiKey) {
         ElMessage.error('请先填写用户名和API密钥')
         return
       }
+      
+      // 保存配置到本地存储
+      this.saveConfigToStorage()
       
       this.loading.userInfo = true
       try {
@@ -265,24 +401,30 @@ export default {
       }
     },
 
-    async getMobileNumbers() {
-      if (!this.validateConfig()) return
-      
-      this.loading.getMobile = true
-      try {
-        const params = {
-          name: this.config.name,
-          ApiKey: this.config.apiKey,
-          pid: this.config.pid,
-          num: this.config.num,
-          noblack: this.config.noblack,
-          serial: this.config.serial
-        }
-        
-        if (this.config.cuy) params.cuy = this.config.cuy
-        
-        const apiMethod = this.config.apiVersion === 'v2' ? api.getMobileCode : api.getMobile
-        const response = await apiMethod(params)
+         async getMobileNumbers() {
+       if (!this.validateConfig()) return
+       
+       // 保存配置到本地存储
+       this.saveConfigToStorage()
+       
+       // 根据数量自动设置获取方式
+       const serial = this.config.num === 1 ? 2 : 1
+       
+       this.loading.getMobile = true
+       try {
+         const params = {
+           name: this.config.name,
+           ApiKey: this.config.apiKey,
+           pid: this.config.pid,
+           num: this.config.num,
+           noblack: this.config.noblack,
+           serial: serial
+         }
+         
+         if (this.config.cuy) params.cuy = this.config.cuy
+         
+         const apiMethod = this.config.apiVersion === 'v2' ? api.getMobileCode : api.getMobile
+         const response = await apiMethod(params)
         
         if (response.code === 200) {
           const phones = Array.isArray(response.data) ? response.data : [response.data]
@@ -316,23 +458,28 @@ export default {
       }
     },
 
-    async getVerificationCodes() {
-      if (this.phoneNumbers.length === 0) {
-        ElMessage.warning('请先获取手机号码')
-        return
-      }
-      
-      this.loading.getMsg = true
+         async getVerificationCodes(isAutoRefresh = false) {
+       if (this.phoneNumbers.length === 0) {
+         if (!isAutoRefresh) {
+           ElMessage.warning('请先获取手机号码')
+         }
+         return
+       }
+       
+       // 保存配置到本地存储
+       this.saveConfigToStorage()
+       
+       this.loading.getMsg = true
       try {
-        const promises = this.phoneNumbers.map(async (phone) => {
-          try {
-            const response = await api.getMsg({
-              name: this.config.name,
-              ApiKey: this.config.apiKey,
-              pid: this.config.pid,
-              pn: phone.phone,
-              serial: this.config.serial
-            })
+                 const promises = this.phoneNumbers.map(async (phone) => {
+           try {
+             const response = await api.getMsg({
+               name: this.config.name,
+               ApiKey: this.config.apiKey,
+               pid: this.config.pid,
+               pn: phone.phone,
+               serial: this.config.num === 1 ? 2 : 1
+             })
             
             if (response.code === 200) {
               phone.verificationCode = response.data
@@ -356,24 +503,28 @@ export default {
           }
         })
         
-        await Promise.all(promises)
-        ElMessage.success('验证码获取完成')
-      } catch (error) {
-        ElMessage.error('获取验证码失败')
-      } finally {
-        this.loading.getMsg = false
-      }
+                 await Promise.all(promises)
+         if (!isAutoRefresh) {
+           ElMessage.success('验证码获取完成')
+         }
+       } catch (error) {
+         if (!isAutoRefresh) {
+           ElMessage.error('获取验证码失败')
+         }
+       } finally {
+         this.loading.getMsg = false
+       }
     },
 
-    async getSingleCode(phone) {
-      try {
-        const response = await api.getMsg({
-          name: this.config.name,
-          ApiKey: this.config.apiKey,
-          pid: this.config.pid,
-          pn: phone.phone,
-          serial: this.config.serial
-        })
+         async getSingleCode(phone) {
+       try {
+         const response = await api.getMsg({
+           name: this.config.name,
+           ApiKey: this.config.apiKey,
+           pid: this.config.pid,
+           pn: phone.phone,
+           serial: this.config.num === 1 ? 2 : 1
+         })
         
         if (response.code === 200) {
           phone.verificationCode = response.data
@@ -463,15 +614,15 @@ export default {
         })
         
         this.loading.passMobile = true
-        const promises = this.phoneNumbers.map(async (phone) => {
-          try {
-            const response = await api.passMobile({
-              name: this.config.name,
-              ApiKey: this.config.apiKey,
-              pid: this.config.pid,
-              pn: phone.phone,
-              serial: this.config.serial
-            })
+                 const promises = this.phoneNumbers.map(async (phone) => {
+           try {
+             const response = await api.passMobile({
+               name: this.config.name,
+               ApiKey: this.config.apiKey,
+               pid: this.config.pid,
+               pn: phone.phone,
+               serial: this.config.num === 1 ? 2 : 1
+             })
             
             if (response.code === 200) {
               phone.status = '已释放'
@@ -555,13 +706,19 @@ export default {
   background: rgba(255, 255, 255, 0.95);
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-  font-size: 16px;
-}
+ .card-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   font-weight: bold;
+   font-size: 16px;
+ }
+ 
+ .auto-refresh-status {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+ }
 
 .button-group {
   display: flex;
