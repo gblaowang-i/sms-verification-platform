@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = 'https://api.durianrcs.com/out/ext_api'
+const BASE_URL = '/api'
 
 // 创建axios实例
 const api = axios.create({

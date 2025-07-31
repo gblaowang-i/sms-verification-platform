@@ -31,8 +31,9 @@ fi
 echo "📦 安装项目依赖..."
 npm install
 
-# 构建项目
+# 构建项目（确保在项目根目录）
 echo "🔨 构建Vue应用..."
+cd "$(dirname "$0")/.."  # 回到项目根目录
 npm run build
 
 # 检查构建是否成功
