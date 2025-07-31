@@ -49,6 +49,11 @@
                    </el-select>
                  </el-form-item>
                </el-col>
+               <el-col :span="8">
+                 <el-form-item label="国家代码">
+                   <el-input v-model="config.cuy" placeholder="如：bo,us,cn" />
+                 </el-form-item>
+               </el-col>
              </el-row>
              
              <el-row :gutter="20">
@@ -203,15 +208,16 @@ export default {
   name: 'App',
   data() {
     return {
-             config: {
-         name: '',
-         apiKey: '',
-         pid: '',
-         num: 5,
-         cuy: '',
-         noblack: 0,
-         apiVersion: 'v1'
-       },
+      getMode: 'single', // 'single' 或 'multi'
+      config: {
+        name: '',
+        apiKey: '',
+        pid: '',
+        num: 1,
+        cuy: '',
+        noblack: 0,
+        apiVersion: 'v1'
+      },
       autoRefreshTimer: null, // 自动刷新定时器
       rules: {
         name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -231,7 +237,6 @@ export default {
       userInfo: null,
       countryStats: null,
       activeTab: 'phones',
-      getMode: 'single' // 'single' 或 'multi'
     }
   },
   
