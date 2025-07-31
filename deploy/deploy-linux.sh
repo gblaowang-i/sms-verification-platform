@@ -38,6 +38,9 @@ npm run build
 # 检查构建是否成功
 if [ ! -d "dist" ]; then
     echo "❌ 构建失败，dist目录不存在"
+    echo "当前目录: $(pwd)"
+    echo "目录内容:"
+    ls -la
     exit 1
 fi
 

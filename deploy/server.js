@@ -8,11 +8,11 @@ const app = express();
 app.use(cors());
 
 // 静态文件服务
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 // 所有其他请求返回Vue应用
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
