@@ -240,64 +240,75 @@ export default {
     }
   },
   
-     // 本地存储相关方法
-   saveConfigToStorage() {
-     try {
-       localStorage.setItem('smsConfig', JSON.stringify({
-         name: this.config.name,
-         apiKey: this.config.apiKey,
-         pid: this.config.pid,
-         num: this.config.num,
-         cuy: this.config.cuy,
-         noblack: this.config.noblack,
-         apiVersion: this.config.apiVersion
-       }))
-     } catch (error) {
-       console.error('保存配置失败:', error)
-     }
-   },
-  
-  loadConfigFromStorage() {
-    try {
-      const savedConfig = localStorage.getItem('smsConfig')
-      if (savedConfig) {
-        const config = JSON.parse(savedConfig)
-        Object.assign(this.config, config)
-      }
-    } catch (error) {
-      console.error('加载配置失败:', error)
-    }
+  mounted() {
+    // 页面加载时从本地存储恢复配置
+    this.loadConfigFromStorage()
   },
   
-     // 自动刷新相关方法
-   startAutoRefresh() {
-     if (this.phoneNumbers.length === 0) {
-       ElMessage.warning('请先获取手机号码')
-       return
-     }
-     
-     if (this.autoRefreshTimer) {
-       this.clearAutoRefresh()
-     }
-     
-     this.autoRefreshTimer = setInterval(() => {
-       this.getVerificationCodes(true) // 传入true表示是自动刷新
-     }, 5000) // 每5秒刷新一次
-     
-     ElMessage.success('自动获取验证码已开启，每5秒刷新一次')
-   },
-  
-  stopAutoRefresh() {
+  beforeUnmount() {
+    // 组件销毁前清除定时器
     this.clearAutoRefresh()
-    ElMessage.info('自动获取验证码已停止')
   },
   
-     clearAutoRefresh() {
-     if (this.autoRefreshTimer) {
-       clearInterval(this.autoRefreshTimer)
-       this.autoRefreshTimer = null
-     }
-   },
+  methods: {
+    // 本地存储相关方法
+    saveConfigToStorage() {
+      try {
+        localStorage.setItem('smsConfig', JSON.stringify({
+          name: this.config.name,
+          apiKey: this.config.apiKey,
+          pid: this.config.pid,
+          num: this.config.num,
+          cuy: this.config.cuy,
+          noblack: this.config.noblack,
+          apiVersion: this.config.apiVersion
+        }))
+      } catch (error) {
+        console.error('保存配置失败:', error)
+      }
+    },
+    
+    loadConfigFromStorage() {
+      try {
+        const savedConfig = localStorage.getItem('smsConfig')
+        if (savedConfig) {
+          const config = JSON.parse(savedConfig)
+          Object.assign(this.config, config)
+        }
+      } catch (error) {
+        console.error('加载配置失败:', error)
+      }
+    },
+    
+    // 自动刷新相关方法
+    startAutoRefresh() {
+      if (this.phoneNumbers.length === 0) {
+        ElMessage.warning('请先获取手机号码')
+        return
+      }
+      
+      if (this.autoRefreshTimer) {
+        this.clearAutoRefresh()
+      }
+      
+      this.autoRefreshTimer = setInterval(() => {
+        this.getVerificationCodes(true) // 传入true表示是自动刷新
+      }, 5000) // 每5秒刷新一次
+      
+      ElMessage.success('自动获取验证码已开启，每5秒刷新一次')
+    },
+    
+    stopAutoRefresh() {
+      this.clearAutoRefresh()
+      ElMessage.info('自动获取验证码已停止')
+    },
+    
+    clearAutoRefresh() {
+      if (this.autoRefreshTimer) {
+        clearInterval(this.autoRefreshTimer)
+        this.autoRefreshTimer = null
+      }
+    },
    
    // 手动保存配置
    async saveConfig() {
@@ -338,15 +349,6 @@ export default {
        // 用户取消
      })
    },
-  mounted() {
-    // 页面加载时从本地存储恢复配置
-    this.loadConfigFromStorage()
-  },
-  beforeUnmount() {
-    // 组件销毁前清除定时器
-    this.clearAutoRefresh()
-     },
-   methods: {
 
     async getUserInfo() {
       if (!this.config.name || !this.config.apiKey) {
