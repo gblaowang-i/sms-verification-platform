@@ -152,9 +152,13 @@
                 <el-table :data="phoneNumbers" style="width: 100%">
                   <el-table-column prop="phone" label="手机号码">
                     <template #default="scope">
-                      <span>{{ scope.row.phone }}</span>
-                      <el-button type="text" size="small" @click="copyToClipboard(scope.row.phone)">复制(带区号)</el-button>
-                      <el-button type="text" size="small" @click="copyToClipboard(scope.row.phone.replace(/^\+\d{1,4}/, ''))">复制(不带区号)</el-button>
+                      <div style="display: flex; flex-direction: column; align-items: center;">
+                        <span>{{ scope.row.phone }}</span>
+                        <div style="margin-top: 4px; display: flex; gap: 6px;">
+                          <el-button type="text" size="small" @click="copyToClipboard(scope.row.phone)">复制(带区号)</el-button>
+                          <el-button type="text" size="small" @click="copyToClipboard(copyPhoneWithoutCountry(scope.row.phone, scope.row.country))">复制(不带区号)</el-button>
+                        </div>
+                      </div>
                     </template>
                   </el-table-column>
                   <el-table-column prop="country" label="国家区号" />
@@ -703,6 +707,12 @@ export default {
         document.body.removeChild(textarea)
         ElMessage.success('已复制到剪贴板')
       }
+    },
+    copyPhoneWithoutCountry(phone, country) {
+      if (country && phone.startsWith(country)) {
+        return phone.slice(country.length)
+      }
+      return phone.replace(/^\+\d{1,4}/, '')
     }
   }
 }
