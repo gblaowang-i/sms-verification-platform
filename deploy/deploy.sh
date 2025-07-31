@@ -49,6 +49,36 @@ check_sudo() {
     log_success "sudo权限检查通过"
 }
 
+# 检查关键目录权限
+check_directory_permissions() {
+    log_info "检查关键目录权限..."
+    
+    PROJECT_DIR="$(dirname "$0")/.."
+    DEPLOY_DIR="$(dirname "$0")"
+    
+    # 检查项目目录是否可写
+    if [ ! -w "$PROJECT_DIR" ]; then
+        log_error "项目目录无写权限: $PROJECT_DIR"
+        log_info "请运行: sudo chown -R \$USER:\$USER $PROJECT_DIR"
+        exit 1
+    fi
+    
+    # 检查deploy目录是否可写
+    if [ ! -w "$DEPLOY_DIR" ]; then
+        log_error "deploy目录无写权限: $DEPLOY_DIR"
+        log_info "请运行: sudo chown -R \$USER:\$USER $DEPLOY_DIR"
+        exit 1
+    fi
+    
+    # 检查用户主目录权限
+    if [ ! -w "$HOME" ]; then
+        log_error "用户主目录无写权限: $HOME"
+        exit 1
+    fi
+    
+    log_success "目录权限检查通过"
+}
+
 # 检查并修复文件权限
 fix_permissions() {
     log_info "检查并修复文件权限..."
@@ -63,13 +93,37 @@ fix_permissions() {
     PROJECT_DIR="$(dirname "$0")/.."
     if [ -d "$PROJECT_DIR" ]; then
         log_info "修复项目目录权限: $PROJECT_DIR"
+        
+        # 设置目录所有者
         sudo chown -R $USER:$USER "$PROJECT_DIR"
-        chmod -R 755 "$PROJECT_DIR"
+        
+        # 设置目录权限
+        find "$PROJECT_DIR" -type d -exec chmod 755 {} \;
+        find "$PROJECT_DIR" -type f -exec chmod 644 {} \;
+        
+        # 确保脚本文件有执行权限
+        find "$PROJECT_DIR" -name "*.sh" -exec chmod +x {} \;
         
         # 确保node_modules权限正确
         if [ -d "$PROJECT_DIR/node_modules" ]; then
+            log_info "修复node_modules权限..."
             chmod -R 755 "$PROJECT_DIR/node_modules"
         fi
+        
+        # 确保deploy目录权限
+        DEPLOY_DIR="$(dirname "$0")"
+        if [ -d "$DEPLOY_DIR" ]; then
+            log_info "修复deploy目录权限: $DEPLOY_DIR"
+            sudo chown -R $USER:$USER "$DEPLOY_DIR"
+            chmod -R 755 "$DEPLOY_DIR"
+        fi
+    fi
+    
+    # 检查npm缓存权限
+    NPM_CACHE_DIR=$(npm config get cache)
+    if [ -d "$NPM_CACHE_DIR" ]; then
+        log_info "检查npm缓存权限..."
+        sudo chown -R $USER:$USER "$NPM_CACHE_DIR" 2>/dev/null || true
     fi
     
     log_success "权限修复完成"
@@ -210,14 +264,22 @@ start_application() {
         pm2 delete sms-verification 2>/dev/null || true
     fi
     
+    # 确保PM2目录权限正确
+    PM2_HOME="$HOME/.pm2"
+    if [ -d "$PM2_HOME" ]; then
+        log_info "修复PM2目录权限..."
+        chmod -R 755 "$PM2_HOME"
+    fi
+    
     # 启动应用
     pm2 start server.js --name "sms-verification"
     
     # 保存PM2配置
     pm2 save
     
-    # 设置开机自启
-    pm2 startup
+    # 设置开机自启（需要sudo权限）
+    log_info "设置PM2开机自启..."
+    pm2 startup | tail -n 1 | bash
     
     log_success "应用启动完成"
 }
@@ -271,6 +333,7 @@ main() {
     # 执行部署步骤
     check_root
     check_sudo
+    check_directory_permissions
     fix_permissions
     check_dependencies
     install_nodejs
