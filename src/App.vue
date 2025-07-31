@@ -412,32 +412,38 @@ export default {
     },
 
          async getMobileNumbers() {
-       if (!this.validateConfig()) return
-       
-       // 保存配置到本地存储
-       this.saveConfigToStorage()
-       
-       // 获取数量强制限制在1-10，按getMode逻辑
-       let num = this.getMode === 'single' ? 1 : Number(this.config.num)
-       if (isNaN(num) || num < 1) num = 1
-       if (num > 10) num = 10
-       // 严格按API文档设置参数
-       const isSingle = this.getMode === 'single'
-       const params = {
-         name: this.config.name,
-         ApiKey: this.config.apiKey,
-         pid: this.config.pid,
-         num: isSingle ? 1 : num, // 单个时强制为1
-         noblack: this.config.noblack,
-         serial: isSingle ? 2 : 1
-       }
-       if (this.config.cuy) params.cuy = this.config.cuy
-       
-       this.loading.getMobile = true
-       try {
-         const apiMethod = this.config.apiVersion === 'v2' ? api.getMobileCode : api.getMobile
-         const response = await apiMethod(params)
-        
+      console.log('=== 调试信息 ===')
+      console.log('getMode:', this.getMode)
+      console.log('config.num:', this.config.num)
+      console.log('getMode === single:', this.getMode === 'single')
+      
+      if (!this.validateConfig()) return
+      this.saveConfigToStorage()
+      
+      let num = this.getMode === 'single' ? 1 : Number(this.config.num)
+      if (isNaN(num) || num < 1) num = 1
+      if (num > 10) num = 10
+      const isSingle = this.getMode === 'single'
+      
+      console.log('计算后的num:', num)
+      console.log('isSingle:', isSingle)
+      
+      const params = {
+        name: this.config.name,
+        ApiKey: this.config.apiKey,
+        pid: this.config.pid,
+        num: isSingle ? 1 : num,
+        noblack: this.config.noblack,
+        serial: isSingle ? 2 : 1
+      }
+      if (this.config.cuy) params.cuy = this.config.cuy
+      
+      console.log('最终发送的参数:', params)
+      
+      this.loading.getMobile = true
+      try {
+        const apiMethod = this.config.apiVersion === 'v2' ? api.getMobileCode : api.getMobile
+        const response = await apiMethod(params)
         if (response.code === 200) {
           const phones = Array.isArray(response.data) ? response.data : [response.data]
           this.phoneNumbers = phones.map(phone => {
@@ -448,7 +454,7 @@ export default {
                 country: countryCode,
                 status: '已获取',
                 verificationCode: '',
-                serial: params.serial // 记录serial
+                serial: params.serial
               }
             } else {
               return {
@@ -456,7 +462,7 @@ export default {
                 country: '',
                 status: '已获取',
                 verificationCode: '',
-                serial: params.serial // 记录serial
+                serial: params.serial
               }
             }
           })
