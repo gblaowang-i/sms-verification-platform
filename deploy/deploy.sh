@@ -8,7 +8,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 # 日志函数
 log_info() {
@@ -32,194 +32,97 @@ print_separator() {
     echo "=========================================="
 }
 
-# 检查是否为root用户
-check_root() {
-    if [ "$EUID" -eq 0 ]; then
-        log_warning "检测到root用户运行，建议使用普通用户"
-    fi
-}
-
-# 检查sudo权限
-check_sudo() {
-    if ! sudo -n true 2>/dev/null; then
-        log_error "需要sudo权限，请确保当前用户有sudo权限"
-        log_info "请运行: sudo usermod -aG sudo \$USER"
-        exit 1
-    fi
-    log_success "sudo权限检查通过"
-}
-
-# 检查关键目录权限
-check_directory_permissions() {
-    log_info "检查关键目录权限..."
+# 检测并安装环境
+setup_environment() {
+    log_info "检测并安装运行环境..."
     
-    PROJECT_DIR="$(dirname "$0")/.."
-    DEPLOY_DIR="$(dirname "$0")"
-    
-    # 检查项目目录是否可写
-    if [ ! -w "$PROJECT_DIR" ]; then
-        log_error "项目目录无写权限: $PROJECT_DIR"
-        log_info "请运行: sudo chown -R \$USER:\$USER $PROJECT_DIR"
-        exit 1
-    fi
-    
-    # 检查deploy目录是否可写
-    if [ ! -w "$DEPLOY_DIR" ]; then
-        log_error "deploy目录无写权限: $DEPLOY_DIR"
-        log_info "请运行: sudo chown -R \$USER:\$USER $DEPLOY_DIR"
-        exit 1
-    fi
-    
-    # 检查用户主目录权限
-    if [ ! -w "$HOME" ]; then
-        log_error "用户主目录无写权限: $HOME"
-        exit 1
-    fi
-    
-    log_success "目录权限检查通过"
-}
-
-# 检查并修复文件权限
-fix_permissions() {
-    log_info "检查并修复文件权限..."
-    
-    # 确保脚本有执行权限
-    if [ ! -x "$0" ]; then
-        log_warning "脚本缺少执行权限，正在修复..."
-        chmod +x "$0"
-    fi
-    
-    # 修复项目目录权限
-    PROJECT_DIR="$(dirname "$0")/.."
-    if [ -d "$PROJECT_DIR" ]; then
-        log_info "修复项目目录权限: $PROJECT_DIR"
-        
-        # 设置目录所有者
-        sudo chown -R $USER:$USER "$PROJECT_DIR"
-        
-        # 设置目录权限
-        find "$PROJECT_DIR" -type d -exec chmod 755 {} \;
-        find "$PROJECT_DIR" -type f -exec chmod 644 {} \;
-        
-        # 确保脚本文件有执行权限
-        find "$PROJECT_DIR" -name "*.sh" -exec chmod +x {} \;
-        
-        # 确保node_modules权限正确
-        if [ -d "$PROJECT_DIR/node_modules" ]; then
-            log_info "修复node_modules权限..."
-            chmod -R 755 "$PROJECT_DIR/node_modules"
-        fi
-        
-        # 确保deploy目录权限
-        DEPLOY_DIR="$(dirname "$0")"
-        if [ -d "$DEPLOY_DIR" ]; then
-            log_info "修复deploy目录权限: $DEPLOY_DIR"
-            sudo chown -R $USER:$USER "$DEPLOY_DIR"
-            chmod -R 755 "$DEPLOY_DIR"
-        fi
-    fi
-    
-    # 检查npm缓存权限
-    NPM_CACHE_DIR=$(npm config get cache)
-    if [ -d "$NPM_CACHE_DIR" ]; then
-        log_info "检查npm缓存权限..."
-        sudo chown -R $USER:$USER "$NPM_CACHE_DIR" 2>/dev/null || true
-    fi
-    
-    log_success "权限修复完成"
-}
-
-# 检查系统依赖
-check_dependencies() {
-    log_info "检查系统依赖..."
-    
-    # 检查curl
+    # 检测并安装curl
     if ! command -v curl &> /dev/null; then
         log_info "安装curl..."
         sudo apt-get update
         sudo apt-get install -y curl
     fi
     
-    # 检查git
+    # 检测并安装git
     if ! command -v git &> /dev/null; then
         log_info "安装git..."
         sudo apt-get install -y git
     fi
     
-    log_success "系统依赖检查完成"
-}
-
-# 安装Node.js
-install_nodejs() {
+    # 检测并安装Node.js
     if ! command -v node &> /dev/null; then
         log_info "安装Node.js..."
-        
-        # 添加NodeSource仓库
         curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-        
-        # 安装Node.js
         sudo apt-get install -y nodejs
-        
-        # 验证安装
-        if command -v node &> /dev/null; then
-            log_success "Node.js安装成功: $(node --version)"
-        else
-            log_error "Node.js安装失败"
-            exit 1
-        fi
+        log_success "Node.js安装完成: $(node --version)"
     else
         log_success "Node.js已安装: $(node --version)"
     fi
     
-    # 检查npm
+    # 检测并安装npm
     if ! command -v npm &> /dev/null; then
         log_error "npm未安装，请检查Node.js安装"
         exit 1
     else
         log_success "npm已安装: $(npm --version)"
     fi
-}
-
-# 安装PM2
-install_pm2() {
+    
+    # 检测并安装PM2
     if ! command -v pm2 &> /dev/null; then
         log_info "安装PM2..."
         sudo npm install -g pm2
-        
-        # 验证安装
-        if command -v pm2 &> /dev/null; then
-            log_success "PM2安装成功: $(pm2 --version)"
-        else
-            log_error "PM2安装失败"
-            exit 1
-        fi
+        log_success "PM2安装完成: $(pm2 --version)"
     else
         log_success "PM2已安装: $(pm2 --version)"
     fi
 }
 
-# 安装项目依赖
+# 修复权限
+fix_permissions() {
+    log_info "修复文件权限..."
+    
+    PROJECT_DIR="$(dirname "$0")/.."
+    DEPLOY_DIR="$(dirname "$0")"
+    
+    # 修复项目目录权限
+    sudo chown -R $USER:$USER "$PROJECT_DIR"
+    find "$PROJECT_DIR" -type d -exec chmod 755 {} \;
+    find "$PROJECT_DIR" -type f -exec chmod 644 {} \;
+    find "$PROJECT_DIR" -name "*.sh" -exec chmod +x {} \;
+    
+    # 修复deploy目录权限
+    sudo chown -R $USER:$USER "$DEPLOY_DIR"
+    chmod -R 755 "$DEPLOY_DIR"
+    
+    # 修复node_modules权限（如果存在）
+    if [ -d "$PROJECT_DIR/node_modules" ]; then
+        chmod -R 755 "$PROJECT_DIR/node_modules"
+    fi
+    
+    # 修复PM2目录权限
+    PM2_HOME="$HOME/.pm2"
+    if [ -d "$PM2_HOME" ]; then
+        chmod -R 755 "$PM2_HOME"
+    fi
+    
+    log_success "权限修复完成"
+}
+
+# 安装依赖
 install_dependencies() {
     log_info "安装项目依赖..."
     
     PROJECT_DIR="$(dirname "$0")/.."
     cd "$PROJECT_DIR"
     
-    # 清理旧的node_modules（如果存在）
+    # 清理旧的依赖
     if [ -d "node_modules" ]; then
         log_info "清理旧的依赖..."
         rm -rf node_modules
     fi
     
-    # 安装依赖
     npm install
-    
-    if [ $? -eq 0 ]; then
-        log_success "依赖安装完成"
-    else
-        log_error "依赖安装失败"
-        exit 1
-    fi
+    log_success "依赖安装完成"
 }
 
 # 构建项目
@@ -235,19 +138,14 @@ build_project() {
         rm -rf dist
     fi
     
-    # 构建项目
     npm run build
     
-    # 检查构建是否成功
     if [ ! -d "dist" ]; then
         log_error "构建失败，dist目录不存在"
-        log_info "当前目录: $(pwd)"
-        log_info "目录内容:"
-        ls -la
         exit 1
     fi
     
-    log_success "构建完成！"
+    log_success "构建完成"
 }
 
 # 启动应用
@@ -264,21 +162,9 @@ start_application() {
         pm2 delete sms-verification 2>/dev/null || true
     fi
     
-    # 确保PM2目录权限正确
-    PM2_HOME="$HOME/.pm2"
-    if [ -d "$PM2_HOME" ]; then
-        log_info "修复PM2目录权限..."
-        chmod -R 755 "$PM2_HOME"
-    fi
-    
     # 启动应用
     pm2 start server.js --name "sms-verification"
-    
-    # 保存PM2配置
     pm2 save
-    
-    # 设置开机自启（需要sudo权限）
-    log_info "设置PM2开机自启..."
     pm2 startup | tail -n 1 | bash
     
     log_success "应用启动完成"
@@ -288,7 +174,6 @@ start_application() {
 verify_deployment() {
     log_info "验证部署..."
     
-    # 检查PM2进程
     if pm2 list | grep -q "sms-verification"; then
         log_success "PM2进程运行正常"
     else
@@ -296,7 +181,6 @@ verify_deployment() {
         exit 1
     fi
     
-    # 检查端口
     sleep 3
     if netstat -tulpn 2>/dev/null | grep -q ":3000"; then
         log_success "应用端口3000正常监听"
@@ -330,14 +214,8 @@ main() {
     log_info "🚀 开始部署短信验证码接收平台到Linux服务器..."
     print_separator
     
-    # 执行部署步骤
-    check_root
-    check_sudo
-    check_directory_permissions
+    setup_environment
     fix_permissions
-    check_dependencies
-    install_nodejs
-    install_pm2
     install_dependencies
     build_project
     start_application
