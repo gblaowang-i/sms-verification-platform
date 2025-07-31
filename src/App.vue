@@ -150,7 +150,13 @@
             <el-tab-pane label="手机号码" name="phones">
               <div class="result-content">
                 <el-table :data="phoneNumbers" style="width: 100%">
-                  <el-table-column prop="phone" label="手机号码" />
+                  <el-table-column prop="phone" label="手机号码">
+                    <template #default="scope">
+                      <span>{{ scope.row.phone }}</span>
+                      <el-button type="text" size="small" @click="copyToClipboard(scope.row.phone)">复制(带区号)</el-button>
+                      <el-button type="text" size="small" @click="copyToClipboard(scope.row.phone.replace(/^\+\d{1,4}/, ''))">复制(不带区号)</el-button>
+                    </template>
+                  </el-table-column>
                   <el-table-column prop="country" label="国家区号" />
                   <el-table-column prop="status" label="状态">
                     <template #default="scope">
@@ -159,7 +165,12 @@
                       </el-tag>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="verificationCode" label="验证码" />
+                  <el-table-column prop="verificationCode" label="验证码">
+                    <template #default="scope">
+                      <span>{{ scope.row.verificationCode }}</span>
+                      <el-button v-if="scope.row.verificationCode" type="text" size="small" @click="copyToClipboard(scope.row.verificationCode)">复制</el-button>
+                    </template>
+                  </el-table-column>
                   <el-table-column label="操作">
                     <template #default="scope">
                       <el-button size="small" @click="getSingleCode(scope.row)">
@@ -675,6 +686,23 @@ export default {
       this.userInfo = null
       this.countryStats = null
       ElMessage.success('结果已清空')
+    },
+
+    copyToClipboard(text) {
+      if (!text) return
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text)
+        ElMessage.success('已复制到剪贴板')
+      } else {
+        // 兼容旧浏览器
+        const textarea = document.createElement('textarea')
+        textarea.value = text
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+        ElMessage.success('已复制到剪贴板')
+      }
     }
   }
 }
