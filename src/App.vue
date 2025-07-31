@@ -35,24 +35,18 @@
                  </el-form-item>
                </el-col>
                <el-col :span="8">
-                 <el-form-item label="获取数量" prop="num">
-                   <el-select v-model="config.num">
-                     <el-option label="获取1个" :value="1" />
-                     <el-option label="获取2个" :value="2" />
-                     <el-option label="获取3个" :value="3" />
-                     <el-option label="获取4个" :value="4" />
-                     <el-option label="获取5个" :value="5" />
-                     <el-option label="获取6个" :value="6" />
-                     <el-option label="获取7个" :value="7" />
-                     <el-option label="获取8个" :value="8" />
-                     <el-option label="获取9个" :value="9" />
-                     <el-option label="获取10个" :value="10" />
-                   </el-select>
+                 <el-form-item label="获取方式">
+                   <el-radio-group v-model="getMode">
+                     <el-radio label="single">获取单个</el-radio>
+                     <el-radio label="multi">获取多个</el-radio>
+                   </el-radio-group>
                  </el-form-item>
                </el-col>
                <el-col :span="8">
-                 <el-form-item label="国家代码">
-                   <el-input v-model="config.cuy" placeholder="如：bo,us,cn" />
+                 <el-form-item label="获取数量" prop="num">
+                   <el-select v-model="config.num" :disabled="getMode === 'single'">
+                     <el-option v-for="n in 10" :key="n" :label="`获取${n}个`" :value="n" />
+                   </el-select>
                  </el-form-item>
                </el-col>
              </el-row>
@@ -236,7 +230,8 @@ export default {
       phoneNumbers: [],
       userInfo: null,
       countryStats: null,
-      activeTab: 'phones'
+      activeTab: 'phones',
+      getMode: 'single' // 'single' 或 'multi'
     }
   },
   
@@ -248,6 +243,14 @@ export default {
   beforeUnmount() {
     // 组件销毁前清除定时器
     this.clearAutoRefresh()
+  },
+
+  watch: {
+    getMode(val) {
+      if (val === 'single') {
+        this.config.num = 1
+      }
+    }
   },
   
   methods: {
@@ -409,13 +412,17 @@ export default {
        // 保存配置到本地存储
        this.saveConfigToStorage()
        
+       // 获取数量强制限制在1-10，按getMode逻辑
+       let num = this.getMode === 'single' ? 1 : Number(this.config.num)
+       if (isNaN(num) || num < 1) num = 1
+       if (num > 10) num = 10
        // 严格按API文档设置参数
-       const isSingle = this.config.num === 1
+       const isSingle = this.getMode === 'single'
        const params = {
          name: this.config.name,
          ApiKey: this.config.apiKey,
          pid: this.config.pid,
-         num: isSingle ? 1 : this.config.num, // 单个时强制为1
+         num: isSingle ? 1 : num, // 单个时强制为1
          noblack: this.config.noblack,
          serial: isSingle ? 2 : 1
        }
