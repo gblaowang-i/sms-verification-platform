@@ -171,10 +171,19 @@ start_application() {
     
     log_info "当前工作目录: $(pwd)"
     
+    # 复制server.js到项目根目录
+    DEPLOY_DIR="$(dirname "$0")"
+    if [ -f "$DEPLOY_DIR/server.js" ]; then
+        log_info "复制server.js到项目根目录..."
+        cp "$DEPLOY_DIR/server.js" .
+    else
+        log_error "server.js不存在于deploy目录: $DEPLOY_DIR"
+        exit 1
+    fi
+    
     # 检查server.js是否存在
     if [ ! -f "server.js" ]; then
-        log_error "server.js不存在，当前目录: $(pwd)"
-        log_error "请确保在正确的项目目录中运行脚本"
+        log_error "server.js复制失败，当前目录: $(pwd)"
         exit 1
     fi
     
