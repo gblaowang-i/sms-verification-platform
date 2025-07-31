@@ -410,7 +410,7 @@ export default {
        this.saveConfigToStorage()
        
        // 根据数量自动设置获取方式
-       const serial = this.config.num === 1 ? 2 : 1
+       const serial = this.config.num === 1 ? 2 : 1  // 1个=单条(2)，多个=多条(1)
        
        this.loading.getMobile = true
        try {
@@ -424,6 +424,9 @@ export default {
          }
          
          if (this.config.cuy) params.cuy = this.config.cuy
+         
+         // 调试：打印发送的参数
+         console.log('发送的参数:', params)
          
          const apiMethod = this.config.apiVersion === 'v2' ? api.getMobileCode : api.getMobile
          const response = await apiMethod(params)
