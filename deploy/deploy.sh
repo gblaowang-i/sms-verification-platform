@@ -176,6 +176,8 @@ start_application() {
     DEPLOY_DIR="$(cd "$(dirname "$0")" && pwd)"
     log_info "deploy目录: $DEPLOY_DIR"
     log_info "当前工作目录: $(pwd)"
+    log_info "脚本路径: $0"
+    log_info "dirname \$0: $(dirname "$0")"
     
     if [ -f "$DEPLOY_DIR/server.js" ]; then
         log_info "复制server.js到项目根目录..."
