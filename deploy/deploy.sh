@@ -201,7 +201,22 @@ start_application() {
     # 启动应用
     pm2 start server.js --name "sms-verification"
     pm2 save
-    pm2 startup | tail -n 1 | bash
+    
+    # 设置开机自启（处理PM2 startup命令的输出）
+    log_info "设置PM2开机自启..."
+    STARTUP_OUTPUT=$(pm2 startup 2>/dev/null)
+    if [ $? -eq 0 ]; then
+        # 提取需要执行的命令
+        STARTUP_CMD=$(echo "$STARTUP_OUTPUT" | grep -E "sudo.*pm2" | tail -n 1)
+        if [ -n "$STARTUP_CMD" ]; then
+            log_info "执行开机自启命令..."
+            eval "$STARTUP_CMD"
+        else
+            log_warning "未找到开机自启命令，可能需要手动设置"
+        fi
+    else
+        log_warning "PM2 startup命令执行失败，跳过开机自启设置"
+    fi
     
     log_success "应用启动完成"
 }
