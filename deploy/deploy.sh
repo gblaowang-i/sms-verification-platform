@@ -108,12 +108,26 @@ fix_permissions() {
     log_success "权限修复完成"
 }
 
+# 获取项目根目录
+get_project_dir() {
+    echo "$(dirname "$0")/.."
+}
+
 # 安装依赖
 install_dependencies() {
     log_info "安装项目依赖..."
     
-    PROJECT_DIR="$(dirname "$0")/.."
+    PROJECT_DIR=$(get_project_dir)
     cd "$PROJECT_DIR"
+    
+    log_info "当前工作目录: $(pwd)"
+    
+    # 检查package.json是否存在
+    if [ ! -f "package.json" ]; then
+        log_error "package.json不存在，当前目录: $(pwd)"
+        log_error "请确保在正确的项目目录中运行脚本"
+        exit 1
+    fi
     
     # 清理旧的依赖
     if [ -d "node_modules" ]; then
@@ -129,8 +143,17 @@ install_dependencies() {
 build_project() {
     log_info "构建Vue应用..."
     
-    PROJECT_DIR="$(dirname "$0")/.."
+    PROJECT_DIR=$(get_project_dir)
     cd "$PROJECT_DIR"
+    
+    log_info "当前工作目录: $(pwd)"
+    
+    # 检查package.json是否存在
+    if [ ! -f "package.json" ]; then
+        log_error "package.json不存在，当前目录: $(pwd)"
+        log_error "请确保在正确的项目目录中运行脚本"
+        exit 1
+    fi
     
     # 清理旧的构建文件
     if [ -d "dist" ]; then
@@ -152,8 +175,17 @@ build_project() {
 start_application() {
     log_info "启动应用..."
     
-    PROJECT_DIR="$(dirname "$0")/.."
+    PROJECT_DIR=$(get_project_dir)
     cd "$PROJECT_DIR"
+    
+    log_info "当前工作目录: $(pwd)"
+    
+    # 检查server.js是否存在
+    if [ ! -f "server.js" ]; then
+        log_error "server.js不存在，当前目录: $(pwd)"
+        log_error "请确保在正确的项目目录中运行脚本"
+        exit 1
+    fi
     
     # 停止已存在的应用
     if pm2 list | grep -q "sms-verification"; then
