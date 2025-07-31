@@ -81,7 +81,7 @@ setup_environment() {
 fix_permissions() {
     log_info "修复文件权限..."
     
-    PROJECT_DIR="$(dirname "$0")/.."
+    PROJECT_DIR=$(get_project_dir)
     DEPLOY_DIR="$(dirname "$0")"
     
     # 修复项目目录权限
@@ -95,8 +95,8 @@ fix_permissions() {
     chmod -R 755 "$DEPLOY_DIR"
     
     # 修复node_modules权限（如果存在）
-    if [ -d "$PROJECT_DIR/node_modules" ]; then
-        chmod -R 755 "$PROJECT_DIR/node_modules"
+    if [ -d "node_modules" ]; then
+        chmod -R 755 "node_modules"
     fi
     
     # 修复PM2目录权限
@@ -116,9 +116,6 @@ get_project_dir() {
 # 安装依赖
 install_dependencies() {
     log_info "安装项目依赖..."
-    
-    PROJECT_DIR=$(get_project_dir)
-    cd "$PROJECT_DIR"
     
     log_info "当前工作目录: $(pwd)"
     
@@ -142,9 +139,6 @@ install_dependencies() {
 # 构建项目
 build_project() {
     log_info "构建Vue应用..."
-    
-    PROJECT_DIR=$(get_project_dir)
-    cd "$PROJECT_DIR"
     
     log_info "当前工作目录: $(pwd)"
     
@@ -174,9 +168,6 @@ build_project() {
 # 启动应用
 start_application() {
     log_info "启动应用..."
-    
-    PROJECT_DIR=$(get_project_dir)
-    cd "$PROJECT_DIR"
     
     log_info "当前工作目录: $(pwd)"
     
@@ -245,6 +236,11 @@ main() {
     print_separator
     log_info "🚀 开始部署短信验证码接收平台到Linux服务器..."
     print_separator
+    
+    # 切换到项目根目录
+    PROJECT_DIR=$(get_project_dir)
+    cd "$PROJECT_DIR"
+    log_info "切换到项目根目录: $(pwd)"
     
     setup_environment
     fix_permissions
