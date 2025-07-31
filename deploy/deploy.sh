@@ -172,12 +172,12 @@ start_application() {
     log_info "当前工作目录: $(pwd)"
     
     # 复制server.js到项目根目录
-    DEPLOY_DIR="$(dirname "$0")"
-    if [ -f "$DEPLOY_DIR/server.js" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+    if [ -f "$SCRIPT_DIR/server.js" ]; then
         log_info "复制server.js到项目根目录..."
-        cp "$DEPLOY_DIR/server.js" .
+        cp "$SCRIPT_DIR/server.js" .
     else
-        log_error "server.js不存在于deploy目录: $DEPLOY_DIR"
+        log_error "server.js不存在于deploy目录: $SCRIPT_DIR"
         exit 1
     fi
     
