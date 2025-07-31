@@ -412,65 +412,53 @@ export default {
     },
 
          async getMobileNumbers() {
-      console.log('=== 调试信息 ===')
-      console.log('getMode:', this.getMode)
-      console.log('config.num:', this.config.num)
-      console.log('getMode === single:', this.getMode === 'single')
-      
       if (!this.validateConfig()) return
       this.saveConfigToStorage()
-      
       let num = this.getMode === 'single' ? 1 : Number(this.config.num)
       if (isNaN(num) || num < 1) num = 1
       if (num > 10) num = 10
-      const isSingle = this.getMode === 'single'
-      
-      console.log('计算后的num:', num)
-      console.log('isSingle:', isSingle)
-      
       const params = {
         name: this.config.name,
         ApiKey: this.config.apiKey,
         pid: this.config.pid,
-        num: isSingle ? 1 : num,
+        num: 1, // 每次只取1个
         noblack: this.config.noblack,
-        serial: isSingle ? 2 : 1
+        serial: 2 // 始终用单个获取
       }
       if (this.config.cuy) params.cuy = this.config.cuy
-      
-      console.log('最终发送的参数:', params)
-      
       this.loading.getMobile = true
       try {
-        const apiMethod = this.config.apiVersion === 'v2' ? api.getMobileCode : api.getMobile
-        const response = await apiMethod(params)
-        if (response.code === 200) {
-          const phones = Array.isArray(response.data) ? response.data : [response.data]
-          this.phoneNumbers = phones.map(phone => {
+        let phones = []
+        for (let i = 0; i < num; i++) {
+          const apiMethod = this.config.apiVersion === 'v2' ? api.getMobileCode : api.getMobile
+          const response = await apiMethod(params)
+          if (response.code === 200) {
             if (this.config.apiVersion === 'v2') {
-              const [phoneNumber, countryCode] = phone.split(',')
-              return {
+              const [phoneNumber, countryCode] = response.data.split(',')
+              phones.push({
                 phone: phoneNumber,
                 country: countryCode,
                 status: '已获取',
                 verificationCode: '',
-                serial: params.serial
-              }
+                serial: 2
+              })
             } else {
-              return {
-                phone: phone,
+              phones.push({
+                phone: response.data,
                 country: '',
                 status: '已获取',
                 verificationCode: '',
-                serial: params.serial
-              }
+                serial: 2
+              })
             }
-          })
-          this.activeTab = 'phones'
-          ElMessage.success(`成功获取 ${this.phoneNumbers.length} 个手机号码`)
-        } else {
-          ElMessage.error(response.msg || '获取手机号码失败')
+          } else {
+            ElMessage.error(response.msg || '获取手机号码失败')
+            break
+          }
         }
+        this.phoneNumbers = phones
+        this.activeTab = 'phones'
+        ElMessage.success(`成功获取 ${this.phoneNumbers.length} 个手机号码`)
       } catch (error) {
         ElMessage.error('获取手机号码失败')
       } finally {
