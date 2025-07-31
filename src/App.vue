@@ -409,25 +409,20 @@ export default {
        // 保存配置到本地存储
        this.saveConfigToStorage()
        
-       // 根据数量自动设置获取方式
-       const serial = this.config.num === 1 ? 2 : 1  // 1个=单条(2)，多个=多条(1)
+       // 严格按API文档设置参数
+       const isSingle = this.config.num === 1
+       const params = {
+         name: this.config.name,
+         ApiKey: this.config.apiKey,
+         pid: this.config.pid,
+         num: isSingle ? 1 : this.config.num, // 单个时强制为1
+         noblack: this.config.noblack,
+         serial: isSingle ? 2 : 1
+       }
+       if (this.config.cuy) params.cuy = this.config.cuy
        
        this.loading.getMobile = true
        try {
-         const params = {
-           name: this.config.name,
-           ApiKey: this.config.apiKey,
-           pid: this.config.pid,
-           num: this.config.num,
-           noblack: this.config.noblack,
-           serial: serial
-         }
-         
-         if (this.config.cuy) params.cuy = this.config.cuy
-         
-         // 调试：打印发送的参数
-         console.log('发送的参数:', params)
-         
          const apiMethod = this.config.apiVersion === 'v2' ? api.getMobileCode : api.getMobile
          const response = await apiMethod(params)
         
@@ -440,14 +435,16 @@ export default {
                 phone: phoneNumber,
                 country: countryCode,
                 status: '已获取',
-                verificationCode: ''
+                verificationCode: '',
+                serial: params.serial // 记录serial
               }
             } else {
               return {
                 phone: phone,
                 country: '',
                 status: '已获取',
-                verificationCode: ''
+                verificationCode: '',
+                serial: params.serial // 记录serial
               }
             }
           })
@@ -483,7 +480,7 @@ export default {
                ApiKey: this.config.apiKey,
                pid: this.config.pid,
                pn: phone.phone,
-               serial: this.config.num === 1 ? 2 : 1
+               serial: phone.serial // 用号码对象里的serial
              })
             
             if (response.code === 200) {
@@ -528,7 +525,7 @@ export default {
            ApiKey: this.config.apiKey,
            pid: this.config.pid,
            pn: phone.phone,
-           serial: this.config.num === 1 ? 2 : 1
+           serial: phone.serial // 用号码对象里的serial
          })
         
         if (response.code === 200) {
@@ -626,7 +623,7 @@ export default {
                ApiKey: this.config.apiKey,
                pid: this.config.pid,
                pn: phone.phone,
-               serial: this.config.num === 1 ? 2 : 1
+               serial: phone.serial // 用号码对象里的serial
              })
             
             if (response.code === 200) {
