@@ -154,9 +154,9 @@
                     <template #default="scope">
                       <div style="display: flex; flex-direction: column; align-items: center;">
                         <span>{{ scope.row.phone }}</span>
-                        <div style="margin-top: 4px; display: flex; gap: 6px;">
-                          <el-button type="text" size="small" @click="copyToClipboard(scope.row.phone)">复制(带区号)</el-button>
-                          <el-button type="text" size="small" @click="copyToClipboard(copyPhoneWithoutCountry(scope.row.phone, scope.row.country))">复制(不带区号)</el-button>
+                        <div style="margin-top: 4px; display: flex; gap: 2px;">
+                          <el-button type="success" size="small" @click="copyToClipboard(scope.row.phone)">复制(带区号)</el-button>
+                          <el-button type="success" size="small" @click="copyToClipboard(copyPhoneWithoutCountry(scope.row.phone, scope.row.country))">复制(不带区号)</el-button>
                         </div>
                       </div>
                     </template>
