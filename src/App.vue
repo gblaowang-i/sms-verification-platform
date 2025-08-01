@@ -171,8 +171,18 @@
                   </el-table-column>
                   <el-table-column prop="verificationCode" label="验证码">
                     <template #default="scope">
-                      <span>{{ scope.row.verificationCode }}</span>
-                      <el-button v-if="scope.row.verificationCode" type="text" size="small" @click="copyToClipboard(scope.row.verificationCode)">复制</el-button>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span>{{ scope.row.verificationCode }}</span>
+                        <el-button 
+                          v-if="scope.row.verificationCode" 
+                          type="success" 
+                          size="small" 
+                          @click="copyToClipboard(scope.row.verificationCode)"
+                          style="padding: 4px 8px;"
+                        >
+                          <el-icon><CopyDocument /></el-icon>
+                        </el-button>
+                      </div>
                     </template>
                   </el-table-column>
                   <el-table-column label="操作">
@@ -218,9 +228,13 @@
 <script>
 import api from './api.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { CopyDocument } from '@element-plus/icons-vue'
 
 export default {
   name: 'App',
+  components: {
+    CopyDocument
+  },
   data() {
     return {
       getMode: 'single', // 'single' 或 'multi'
@@ -453,7 +467,7 @@ export default {
               phones.push({
                 phone: phoneNumber,
                 country: countryCode,
-                status: '已获取',
+                status: '等待验证码',
                 verificationCode: '',
                 serial: 2
               })
@@ -461,7 +475,7 @@ export default {
               phones.push({
                 phone: response.data,
                 country: '',
-                status: '已获取',
+                status: '等待验证码',
                 verificationCode: '',
                 serial: 2
               })
@@ -682,11 +696,11 @@ export default {
 
     getStatusType(status) {
       const statusMap = {
-        '已获取': 'success',
+        '等待验证码': 'warning',
         '验证码已获取': 'success',
         '已加入黑名单': 'danger',
         '已释放': 'info',
-        '获取失败': 'warning'
+        '获取失败': 'error'
       }
       return statusMap[status] || 'info'
     },
