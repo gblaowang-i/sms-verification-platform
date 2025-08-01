@@ -507,6 +507,8 @@ export default {
             if (response.code === 200) {
               phone.verificationCode = response.data
               phone.status = '验证码已获取'
+              // 强制更新视图
+              this.$forceUpdate()
             } else if (response.code === 407) {
               // 多条数据格式
               const codes = response.data.split(';').filter(code => code)
@@ -518,6 +520,8 @@ export default {
                   targetPhone.status = '验证码已获取'
                 }
               })
+              // 强制更新视图
+              this.$forceUpdate()
             } else {
               phone.status = '获取失败'
             }
@@ -552,6 +556,8 @@ export default {
         if (response.code === 200) {
           phone.verificationCode = response.data
           phone.status = '验证码已获取'
+          // 强制更新视图
+          this.$forceUpdate()
           ElMessage.success('获取验证码成功')
         } else {
           ElMessage.error(response.msg || '获取验证码失败')
