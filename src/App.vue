@@ -503,12 +503,24 @@ export default {
          return
        }
        
+       // 如果是自动刷新，只获取还没有验证码的手机号
+       const phonesToCheck = isAutoRefresh 
+         ? this.phoneNumbers.filter(phone => !phone.verificationCode && phone.status !== '验证码已获取')
+         : this.phoneNumbers
+       
+       if (isAutoRefresh && phonesToCheck.length === 0) {
+         // 自动刷新时，如果所有手机号都有验证码了，停止自动刷新
+         this.stopAutoRefresh()
+         ElMessage.success('所有验证码已获取完成，自动刷新已停止')
+         return
+       }
+       
        // 保存配置到本地存储
        this.saveConfigToStorage()
        
        this.loading.getMsg = true
       try {
-                 const promises = this.phoneNumbers.map(async (phone) => {
+                 const promises = phonesToCheck.map(async (phone) => {
            try {
              const response = await api.getMsg({
                name: this.config.name,
@@ -537,10 +549,12 @@ export default {
               // 强制更新视图
               this.$forceUpdate()
             } else {
-              phone.status = '获取失败'
+              // 验证码还没到，保持等待状态
+              phone.status = '等待验证码'
             }
           } catch (error) {
-            phone.status = '获取失败'
+            // 网络错误或其他异常，保持等待状态
+            phone.status = '等待验证码'
           }
         })
         
@@ -699,8 +713,7 @@ export default {
         '等待验证码': 'warning',
         '验证码已获取': 'success',
         '已加入黑名单': 'danger',
-        '已释放': 'info',
-        '获取失败': 'error'
+        '已释放': 'info'
       }
       return statusMap[status] || 'info'
     },
