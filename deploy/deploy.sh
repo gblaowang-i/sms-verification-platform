@@ -32,9 +32,33 @@ print_separator() {
     echo "=========================================="
 }
 
+# 修复主机名解析问题
+fix_hostname() {
+    log_info "修复主机名解析问题..."
+    
+    # 获取当前主机名
+    CURRENT_HOSTNAME=$(hostname)
+    
+    # 检查/etc/hosts文件是否包含主机名
+    if ! grep -q "$CURRENT_HOSTNAME" /etc/hosts; then
+        log_info "添加主机名到/etc/hosts文件..."
+        echo "127.0.0.1 $CURRENT_HOSTNAME" | sudo tee -a /etc/hosts > /dev/null
+    fi
+    
+    # 检查主机名解析
+    if hostname -f > /dev/null 2>&1; then
+        log_success "主机名解析正常"
+    else
+        log_warning "主机名解析可能仍有问题，但继续部署"
+    fi
+}
+
 # 检测并安装环境
 setup_environment() {
     log_info "检测并安装运行环境..."
+    
+    # 修复主机名问题
+    fix_hostname
     
     # 检测并安装curl
     if ! command -v curl &> /dev/null; then
@@ -70,7 +94,8 @@ setup_environment() {
     # 检测并安装PM2
     if ! command -v pm2 &> /dev/null; then
         log_info "安装PM2..."
-        sudo npm install -g pm2
+        # 使用--unsafe-perm避免权限问题
+        sudo npm install -g pm2 --unsafe-perm
         log_success "PM2安装完成: $(pm2 --version)"
     else
         log_success "PM2已安装: $(pm2 --version)"

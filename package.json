@@ -11,16 +11,17 @@
     "deploy": "npm run build && npm start"
   },
   "dependencies": {
-    "vue": "^3.3.4",
-    "axios": "^1.5.0",
-    "element-plus": "^2.3.8",
     "@element-plus/icons-vue": "^2.1.0",
-    "express": "^4.18.2",
+    "axios": "^1.5.0",
     "cors": "^2.8.5",
-    "http-proxy-middleware": "^2.0.6"
+    "element-plus": "^2.3.8",
+    "express": "^4.18.2",
+    "http-proxy-middleware": "^2.0.6",
+    "vue": "^3.3.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.3.4",
+    "terser": "^5.43.1",
     "vite": "^4.4.9"
   }
-} 
+}
