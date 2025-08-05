@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 快速部署脚本 - 解决主机名解析问题
+# 快速部署脚本 - 解决PM2安装卡住问题
 set -e
 
 echo "🚀 开始快速部署..."
@@ -29,10 +29,17 @@ npm run build
 echo "📋 复制服务器文件..."
 cp deploy/server.js dist/
 
-# 6. 安装PM2（如果未安装）
-if ! command -v pm2 &> /dev/null; then
+# 6. 检查PM2是否已安装
+if command -v pm2 &> /dev/null; then
+    echo "✅ PM2已安装: $(pm2 --version)"
+else
     echo "📥 安装PM2..."
-    sudo npm install -g pm2 --unsafe-perm
+    # 使用npm直接安装，避免sudo权限问题
+    npm install -g pm2 --unsafe-perm --no-fund --no-audit
+    if [ $? -ne 0 ]; then
+        echo "⚠️  PM2安装失败，尝试使用sudo..."
+        sudo npm install -g pm2 --unsafe-perm --no-fund --no-audit
+    fi
 fi
 
 # 7. 停止旧进程
